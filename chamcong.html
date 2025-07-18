@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Chấm công từ xa</title>
+</head>
+<body>
+  <h2>Chấm công có định vị</h2>
+  <form id="chamcongForm">
+    <label>Họ và tên:</label><br>
+    <input type="text" id="ten" required><br><br>
+
+    <label>Ca làm:</label><br>
+    <select id="ca">
+      <option value="Sáng">Sáng</option>
+      <option value="Chiều">Chiều</option>
+      <option value="Tối">Tối</option>
+    </select><br><br>
+
+    <button type="submit">Chấm công ngay</button>
+  </form>
+
+  <p id="status"></p>
+
+  <script>
+    const form = document.getElementById('chamcongForm');
+    const status = document.getElementById('status');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      if (!navigator.geolocation) {
+        status.textContent = 'Trình duyệt không hỗ trợ định vị.';
+        return;
+      }
+
+      status.textContent = 'Đang lấy vị trí...';
+
+      navigator.geolocation.getCurrentPosition(function(position) {
+        const ten = document.getElementById('ten').value;
+        const ca = document.getElementById('ca').value;
+
+        const params = new URLSearchParams();
+        params.append('entry.1260928798', ten); // Tên
+        params.append('entry.629041812', ca);  // Ca
+        params.append('entry.106900937', position.coords.latitude);  // Vĩ độ
+        params.append('entry.635432772 ', position.coords.longitude); // Kinh độ
+
+        fetch('https://docs.google.com/forms/u/0/d/e/1FAIpQLSfGabZR-tCJyJnJMbfcD2sne7DWixD1dwMhqYamUrN9tiNTwA/formResponse', {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: params.toString()
+        });
+
+        status.textContent = '✅ Đã chấm công thành công!';
+        form.reset();
+      }, function() {
+        status.textContent = '❌ Không thể lấy vị trí.';
+      });
+    });
+  </script>
+</body>
+</html>
